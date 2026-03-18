@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PM-OS — معاينة النظام</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f1f5f9;--bg2:#fff;--sidebar:#0f172a;--sidebar2:#1e293b;
+  --primary:#2563eb;--primary2:#3b82f6;--primary-bg:rgba(37,99,235,0.08);
+  --green:#10b981;--green-bg:rgba(16,185,129,0.08);
+  --red:#ef4444;--red-bg:rgba(239,68,68,0.08);
+  --amber:#f59e0b;--amber-bg:rgba(245,158,11,0.08);
+  --cyan:#06b6d4;--cyan-bg:rgba(6,182,212,0.08);
+  --text:#0f172a;--text2:#475569;--text3:#94a3b8;
+  --border:#e2e8f0;--border2:#cbd5e1;
+  --ar:'IBM Plex Sans Arabic',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+  --r:12px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--ar);background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+@keyframes progress{from{width:0}to{width:var(--w)}}
+
+/* ═══ SIDEBAR ═══ */
+.sidebar{
+  width:240px;background:var(--sidebar);color:#fff;
+  position:fixed;top:0;right:0;bottom:0;
+  display:flex;flex-direction:column;z-index:50;
+  transition:width 0.3s;
+}
+.sidebar-logo{
+  padding:20px;display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.sidebar-logo h1{font-size:20px;font-weight:700;letter-spacing:-0.5px}
+.sidebar-logo span{
+  font-size:9px;padding:2px 6px;border-radius:4px;
+  background:rgba(37,99,235,0.3);color:var(--primary2);font-weight:600;
+}
+.sidebar-nav{flex:1;padding:12px 8px;overflow-y:auto}
+.nav-section{font-size:10px;color:rgba(255,255,255,0.3);padding:16px 12px 6px;text-transform:uppercase;letter-spacing:1px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;
+  color:rgba(255,255,255,0.55);cursor:pointer;transition:all 0.15s;
+  margin-bottom:2px;
+}
+.nav-item:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85)}
+.nav-item.active{background:var(--primary);color:#fff}
+.nav-item .icon{width:18px;text-align:center;font-size:14px;flex-shrink:0}
+.nav-item .badge{
+  margin-right:auto;font-size:10px;font-weight:700;
+  padding:1px 6px;border-radius:10px;
+  background:var(--red);color:#fff;
+}
+.sidebar-user{
+  padding:14px 16px;border-top:1px solid rgba(255,255,255,0.06);
+  display:flex;align-items:center;gap:10px;
+}
+.sidebar-user .avatar{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--primary),var(--cyan));
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;
+}
+.sidebar-user .info{font-size:12px}
+.sidebar-user .name{font-weight:600}
+.sidebar-user .role{color:rgba(255,255,255,0.4);font-size:10px}
+
+/* ═══ MAIN ═══ */
+.main{margin-right:240px;flex:1;min-height:100vh}
+
+/* ═══ TOPBAR ═══ */
+.topbar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:40;
+}
+.topbar-title{font-size:16px;font-weight:700}
+.topbar-actions{display:flex;align-items:center;gap:12px}
+.topbar-btn{
+  padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;
+  border:none;cursor:pointer;font-family:var(--ar);transition:all 0.15s;
+}
+.topbar-btn.primary{background:var(--primary);color:#fff}
+.topbar-btn.primary:hover{background:#1d4ed8}
+.topbar-btn.ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.notif-btn{
+  position:relative;width:36px;height:36px;border-radius:8px;
+  border:1px solid var(--border);background:var(--bg2);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:16px;
+}
+.notif-btn .dot{
+  position:absolute;top:6px;left:6px;width:7px;height:7px;
+  border-radius:50%;background:var(--red);border:2px solid var(--bg2);
+}
+
+/* ═══ CONTENT ═══ */
+.content{padding:24px 28px}
+
+/* ═══ STATS CARDS ═══ */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  padding:20px;animation:fadeUp 0.5s ease both;
+}
+.stat-card:nth-child(2){animation-delay:0.05s}
+.stat-card:nth-child(3){animation-delay:0.1s}
+.stat-card:nth-child(4){animation-delay:0.15s}
+.stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.stat-label{font-size:12px;color:var(--text3)}
+.stat-icon{
+  width:36px;height:36px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+}
+.stat-value{font-size:28px;font-weight:700;line-height:1}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:6px;display:flex;align-items:center;gap:4px}
+.stat-sub .up{color:var(--green)}
+.stat-sub .down{color:var(--red)}
+
+/* ═══ GRID LAYOUT ═══ */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.grid-3-1{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px}
+
+/* ═══ CARD ═══ */
+.card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  animation:fadeUp 0.5s ease 0.2s both;
+}
+.card-header{
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.card-title{font-size:14px;font-weight:700}
+.card-badge{
+  font-size:10px;padding:3px 8px;border-radius:6px;font-weight:600;
+}
+.card-body{padding:16px 20px}
+
+/* ═══ TABLE ═══ */
+.table{width:100%;border-collapse:collapse}
+.table th{
+  text-align:right;font-size:11px;color:var(--text3);font-weight:600;
+  padding:10px 12px;border-bottom:1px solid var(--border);
+  text-transform:uppercase;letter-spacing:0.5px;
+}
+.table td{
+  padding:10px 12px;font-size:13px;border-bottom:1px solid rgba(0,0,0,0.03);
+  vertical-align:middle;
+}
+.table tr:hover td{background:rgba(0,0,0,0.01)}
+.table .mono{font-family:var(--mono);font-size:12px}
+
+/* ═══ BADGES ═══ */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;
+}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-red{background:var(--red-bg);color:var(--red)}
+.badge-amber{background:var(--amber-bg);color:var(--amber)}
+.badge-blue{background:var(--primary-bg);color:var(--primary)}
+.badge-cyan{background:var(--cyan-bg);color:var(--cyan)}
+
+/* ═══ PROGRESS BAR ═══ */
+.progress-bar{height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px;animation:progress 1s ease both}
+
+/* ═══ OCCUPANCY VISUAL ═══ */
+.occ-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;padding:8px 0}
+.occ-cell{
+  aspect-ratio:1;border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:8px;font-weight:700;color:#fff;
+  transition:transform 0.15s;cursor:default;
+}
+.occ-cell:hover{transform:scale(1.15)}
+.occ-cell.occupied{background:var(--green)}
+.occ-cell.vacant{background:var(--border2);color:var(--text3)}
+.occ-cell.maintenance{background:var(--amber)}
+
+/* ═══ LEASE TIMELINE ═══ */
+.lease-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.03)}
+.lease-row:last-child{border:none}
+.lease-avatar{
+  width:34px;height:34px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.lease-info{flex:1;min-width:0}
+.lease-name{font-size:13px;font-weight:600}
+.lease-meta{font-size:11px;color:var(--text3)}
+.lease-days{text-align:left;font-size:12px;font-weight:700}
+
+/* ═══ WORK ORDER LIST ═══ */
+.wo-item{
+  display:flex;align-items:center;gap:12px;padding:10px 0;
+  border-bottom:1px solid rgba(0,0,0,0.03);
+}
+.wo-item:last-child{border:none}
+.wo-priority{
+  width:4px;height:36px;border-radius:2px;flex-shrink:0;
+}
+.wo-priority.emergency{background:var(--red)}
+.wo-priority.high{background:var(--amber)}
+.wo-priority.medium{background:var(--primary)}
+.wo-priority.low{background:var(--border2)}
+.wo-info{flex:1}
+.wo-title{font-size:13px;font-weight:600}
+.wo-meta{font-size:11px;color:var(--text3)}
+.wo-status{font-size:11px}
+
+/* ═══ AGING CHART ═══ */
+.aging-bars{display:flex;align-items:flex-end;gap:8px;height:120px;padding:12px 0}
+.aging-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.aging-bar{
+  width:100%;border-radius:6px 6px 0 0;min-height:4px;
+  transition:height 0.8s ease;
+}
+.aging-label{font-size:10px;color:var(--text3);font-family:var(--mono)}
+.aging-value{font-size:11px;font-weight:700;font-family:var(--mono)}
+
+/* ═══ TABS ═══ */
+.tabs{display:flex;gap:2px;margin-bottom:0;border-bottom:1px solid var(--border);padding:0 20px}
+.tab{
+  padding:10px 16px;font-size:12px;font-weight:600;color:var(--text3);
+  cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;
+}
+.tab.active{color:var(--primary);border-color:var(--primary)}
+.tab:hover{color:var(--text)}
+
+/* ═══ MOBILE BOTTOM NAV ═══ */
+.bottom-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;z-index:60;
+  background:var(--sidebar);border-top:1px solid rgba(255,255,255,0.08);
+  padding:6px 8px;padding-bottom:calc(6px + env(safe-area-inset-bottom));
+}
+.bottom-nav-inner{display:flex;justify-content:space-around}
+.bottom-nav-item{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:6px 8px;border-radius:8px;cursor:pointer;transition:all 0.15s;
+  color:rgba(255,255,255,0.45);font-size:9px;font-weight:600;min-width:50px;
+}
+.bottom-nav-item.active{color:#fff;background:rgba(37,99,235,0.3)}
+.bottom-nav-item .bnav-icon{font-size:18px}
+.bottom-nav-item .bnav-badge{
+  position:absolute;top:2px;left:50%;margin-left:6px;
+  width:14px;height:14px;border-radius:50%;
+  background:var(--red);color:#fff;font-size:8px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* ═══ MOBILE OVERLAY MENU ═══ */
+.mobile-menu-overlay{
+  display:none;position:fixed;inset:0;z-index:55;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);
+}
+.mobile-menu-overlay.show{display:block}
+.mobile-menu{
+  position:fixed;top:0;right:0;bottom:0;width:280px;z-index:56;
+  background:var(--sidebar);transform:translateX(100%);
+  transition:transform 0.3s ease;overflow-y:auto;
+  padding-bottom:80px;
+}
+.mobile-menu.show{transform:translateX(0)}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:1024px){
+  .sidebar{width:60px}
+  .sidebar .nav-item span:not(.icon){display:none}
+  .sidebar-logo h1,.sidebar-logo span,.nav-section,.sidebar-user .info{display:none}
+  .sidebar-logo{justify-content:center}
+  .nav-item{justify-content:center;padding:10px}
+  .nav-item .badge{display:none}
+  .main{margin-right:60px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .grid-2,.grid-3-1{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .sidebar{display:none}
+  .main{margin-right:0;padding-bottom:72px}
+  .bottom-nav{display:block}
+  .stats{grid-template-columns:repeat(2,1fr);gap:8px}
+  .stat-card{padding:14px}
+  .stat-value{font-size:22px}
+  .stat-icon{width:30px;height:30px;font-size:14px}
+  .grid-2,.grid-3-1{grid-template-columns:1fr;gap:12px}
+  .content{padding:14px}
+  .topbar{padding:0 14px;height:50px}
+  .topbar-title{font-size:14px}
+  .topbar-btn.ghost{display:none}
+  .topbar-btn.primary{font-size:11px;padding:6px 10px}
+  .card-header{padding:12px 14px}
+  .card-body{padding:12px 14px}
+  .table th,.table td{padding:8px 6px;font-size:11px}
+  .table .hide-mobile{display:none}
+  .occ-grid{grid-template-columns:repeat(6,1fr)!important;gap:3px}
+  .occ-cell{font-size:7px;border-radius:3px}
+  .aging-bars{height:90px}
+  .aging-value{font-size:9px}
+  .aging-label{font-size:8px}
+  .wo-item{gap:8px;padding:8px 0}
+  .wo-title{font-size:12px}
+  .lease-row{gap:8px;padding:8px 0}
+  .lease-avatar{width:28px;height:28px;font-size:10px}
+  .lease-name{font-size:12px}
+  .lease-meta{font-size:10px}
+  .progress-bar{width:40px}
+  .badge{font-size:10px;padding:2px 7px}
+  .hamburger{display:flex!important}
+}
+@media(max-width:380px){
+  .stats{grid-template-columns:1fr;gap:8px}
+  .topbar-btn.primary{display:none}
+}
+
+/* ═══ HAMBURGER ═══ */
+.hamburger{
+  display:none!important;width:36px;height:36px;border-radius:8px;
+  border:1px solid var(--border);background:var(--bg2);
+  align-items:center;justify-content:center;cursor:pointer;
+  font-size:18px;flex-shrink:0;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h1>PM-OS</h1>
+    <span>v0.1</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">رئيسي</div>
+    <div class="nav-item active"><span class="icon">📊</span><span>لوحة التحكم</span></div>
+    <div class="nav-item"><span class="icon">🏢</span><span>العقارات</span></div>
+    <div class="nav-item"><span class="icon">🏠</span><span>الوحدات</span></div>
+    <div class="nav-item"><span class="icon">👤</span><span>الملاك</span></div>
+
+    <div class="nav-section">التأجير</div>
+    <div class="nav-item"><span class="icon">👥</span><span>المستأجرون</span></div>
+    <div class="nav-item"><span class="icon">📋</span><span>العقود</span><span class="badge">3</span></div>
+
+    <div class="nav-section">المالية</div>
+    <div class="nav-item"><span class="icon">💰</span><span>الفواتير</span><span class="badge">7</span></div>
+    <div class="nav-item"><span class="icon">💳</span><span>التحصيل</span></div>
+    <div class="nav-item"><span class="icon">📈</span><span>المالية</span></div>
+
+    <div class="nav-section">التشغيل</div>
+    <div class="nav-item"><span class="icon">🔧</span><span>أوامر العمل</span><span class="badge">5</span></div>
+    <div class="nav-item"><span class="icon">🔄</span><span>صيانة وقائية</span></div>
+    <div class="nav-item"><span class="icon">👷</span><span>المقاولون</span></div>
+    <div class="nav-item"><span class="icon">🔍</span><span>الفحوصات</span></div>
+
+    <div class="nav-section">أخرى</div>
+    <div class="nav-item"><span class="icon">📊</span><span>التقارير</span></div>
+    <div class="nav-item"><span class="icon">⚖️</span><span>الحوكمة</span></div>
+    <div class="nav-item"><span class="icon">⚙️</span><span>الإعدادات</span></div>
+  </nav>
+  <div class="sidebar-user">
+    <div class="avatar">أم</div>
+    <div class="info">
+      <div class="name">أحمد المدير</div>
+      <div class="role">مدير عقارات</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="hamburger" onclick="toggleMenu()">☰</div>
+      <div class="topbar-title">لوحة التحكم</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="topbar-btn ghost">📥 تصدير</button>
+      <button class="topbar-btn primary">+ إضافة عقار</button>
+      <div class="notif-btn">🔔<span class="dot"></span></div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-label">إجمالي العقارات</div>
+          <div class="stat-icon" style="background:var(--primary-bg)">🏢</div>
+        </div>
+        <div class="stat-value">8</div>
+        <div class="stat-sub"><span class="up">↑ 2</span> عقارات جديدة هذا الربع</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-label">نسبة الإشغال</div>
+          <div class="stat-icon" style="background:var(--green-bg)">📊</div>
+        </div>
+        <div class="stat-value" style="color:var(--green)">87.5%</div>
+        <div class="stat-sub">168 / 192 وحدة مشغولة</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-label">أوامر عمل مفتوحة</div>
+          <div class="stat-icon" style="background:var(--amber-bg)">🔧</div>
+        </div>
+        <div class="stat-value" style="color:var(--amber)">12</div>
+        <div class="stat-sub"><span class="down">2 طارئ</span> · 4 عالي الأولوية</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-label">فواتير متأخرة</div>
+          <div class="stat-icon" style="background:var(--red-bg)">⚠️</div>
+        </div>
+        <div class="stat-value" style="color:var(--red)">7</div>
+        <div class="stat-sub">إجمالي 142,500 ر.س</div>
+      </div>
+    </div>
+
+    <!-- ROW 1 -->
+    <div class="grid-3-1">
+      <!-- PROPERTIES TABLE -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">العقارات</div>
+          <span class="badge badge-blue">8 عقارات</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>الكود</th>
+                <th>العقار</th>
+                <th class="hide-mobile">النوع</th>
+                <th class="hide-mobile">المدينة</th>
+                <th class="hide-mobile">الوحدات</th>
+                <th>الإشغال</th>
+                <th>الحالة</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono">PROP-0001</td>
+                <td style="font-weight:600">مجمع الواحة السكني</td>
+                <td class="hide-mobile">مجمع سكني</td>
+                <td class="hide-mobile">الرياض</td>
+                <td class="hide-mobile">24</td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <div class="progress-bar" style="width:60px"><div class="progress-fill" style="--w:88%;background:var(--green)"></div></div>
+                    <span class="mono" style="font-size:11px">88%</span>
+                  </div>
+                </td>
+                <td><span class="badge badge-green">نشط</span></td>
+              </tr>
+              <tr>
+                <td class="mono">PROP-0002</td>
+                <td style="font-weight:600">برج النخيل التجاري</td>
+                <td class="hide-mobile">برج</td>
+                <td class="hide-mobile">الرياض</td>
+                <td class="hide-mobile">48</td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <div class="progress-bar" style="width:60px"><div class="progress-fill" style="--w:92%;background:var(--green)"></div></div>
+                    <span class="mono" style="font-size:11px">92%</span>
+                  </div>
+                </td>
+                <td><span class="badge badge-green">نشط</span></td>
+              </tr>
+              <tr>
+                <td class="mono">PROP-0003</td>
+                <td style="font-weight:600">مول الحياة</td>
+                <td class="hide-mobile">مول تجاري</td>
+                <td class="hide-mobile">جدة</td>
+                <td class="hide-mobile">64</td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <div class="progress-bar" style="width:60px"><div class="progress-fill" style="--w:78%;background:var(--amber)"></div></div>
+                    <span class="mono" style="font-size:11px">78%</span>
+                  </div>
+                </td>
+                <td><span class="badge badge-green">نشط</span></td>
+              </tr>
+              <tr>
+                <td class="mono">PROP-0004</td>
+                <td style="font-weight:600">فلل الربوة</td>
+                <td class="hide-mobile">فلل</td>
+                <td class="hide-mobile">الرياض</td>
+                <td class="hide-mobile">12</td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <div class="progress-bar" style="width:60px"><div class="progress-fill" style="--w:100%;background:var(--green)"></div></div>
+                    <span class="mono" style="font-size:11px">100%</span>
+                  </div>
+                </td>
+                <td><span class="badge badge-green">نشط</span></td>
+              </tr>
+              <tr>
+                <td class="mono">PROP-0005</td>
+                <td style="font-weight:600">مبنى الأعمال</td>
+                <td class="hide-mobile">مبنى مكاتب</td>
+                <td class="hide-mobile">الدمام</td>
+                <td class="hide-mobile">32</td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <div class="progress-bar" style="width:60px"><div class="progress-fill" style="--w:84%;background:var(--green)"></div></div>
+                    <span class="mono" style="font-size:11px">84%</span>
+                  </div>
+                </td>
+                <td><span class="badge badge-green">نشط</span></td>
+              </tr>
+              <tr>
+                <td class="mono">PROP-0006</td>
+                <td style="font-weight:600">مستودعات الصناعية</td>
+                <td class="hide-mobile">مستودع</td>
+                <td class="hide-mobile">الرياض</td>
+                <td class="hide-mobile">8</td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <div class="progress-bar" style="width:60px"><div class="progress-fill" style="--w:75%;background:var(--amber)"></div></div>
+                    <span class="mono" style="font-size:11px">75%</span>
+                  </div>
+                </td>
+                <td><span class="badge badge-green">نشط</span></td>
+              </tr>
+              <tr>
+                <td class="mono">PROP-0007</td>
+                <td style="font-weight:600">عمارة السلام</td>
+                <td class="hide-mobile">مبنى تجاري</td>
+                <td class="hide-mobile">جدة</td>
+                <td class="hide-mobile">16</td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <div class="progress-bar" style="width:60px"><div class="progress-fill" style="--w:20%;background:var(--amber)"></div></div>
+                    <span class="mono" style="font-size:11px">20%</span>
+                  </div>
+                </td>
+                <td><span class="badge badge-amber">قيد التهيئة</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- OCCUPANCY VISUAL -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">مجمع الواحة — الوحدات</div>
+          <span style="font-size:11px;color:var(--text3)">24 وحدة</span>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;gap:16px;margin-bottom:12px">
+            <div style="display:flex;align-items:center;gap:4px;font-size:11px">
+              <div style="width:10px;height:10px;border-radius:2px;background:var(--green)"></div> مشغولة
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;font-size:11px">
+              <div style="width:10px;height:10px;border-radius:2px;background:var(--border2)"></div> شاغرة
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;font-size:11px">
+              <div style="width:10px;height:10px;border-radius:2px;background:var(--amber)"></div> صيانة
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-bottom:4px">الطابق ٤</div>
+          <div class="occ-grid" style="grid-template-columns:repeat(6,1fr);margin-bottom:8px">
+            <div class="occ-cell occupied">401</div>
+            <div class="occ-cell occupied">402</div>
+            <div class="occ-cell vacant">403</div>
+            <div class="occ-cell occupied">404</div>
+            <div class="occ-cell occupied">405</div>
+            <div class="occ-cell occupied">406</div>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-bottom:4px">الطابق ٣</div>
+          <div class="occ-grid" style="grid-template-columns:repeat(6,1fr);margin-bottom:8px">
+            <div class="occ-cell occupied">301</div>
+            <div class="occ-cell occupied">302</div>
+            <div class="occ-cell occupied">303</div>
+            <div class="occ-cell maintenance">304</div>
+            <div class="occ-cell occupied">305</div>
+            <div class="occ-cell occupied">306</div>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-bottom:4px">الطابق ٢</div>
+          <div class="occ-grid" style="grid-template-columns:repeat(6,1fr);margin-bottom:8px">
+            <div class="occ-cell occupied">201</div>
+            <div class="occ-cell occupied">202</div>
+            <div class="occ-cell occupied">203</div>
+            <div class="occ-cell occupied">204</div>
+            <div class="occ-cell vacant">205</div>
+            <div class="occ-cell occupied">206</div>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-bottom:4px">الطابق ١</div>
+          <div class="occ-grid" style="grid-template-columns:repeat(6,1fr)">
+            <div class="occ-cell occupied">101</div>
+            <div class="occ-cell occupied">102</div>
+            <div class="occ-cell occupied">103</div>
+            <div class="occ-cell occupied">104</div>
+            <div class="occ-cell occupied">105</div>
+            <div class="occ-cell vacant">106</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 2 -->
+    <div class="grid-2">
+      <!-- EXPIRING LEASES -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">عقود قاربت على الانتهاء</div>
+          <span class="badge badge-amber">3 عقود</span>
+        </div>
+        <div class="card-body">
+          <div class="lease-row">
+            <div class="lease-avatar" style="background:linear-gradient(135deg,#ef4444,#f97316)">م.ع</div>
+            <div class="lease-info">
+              <div class="lease-name">محمد العتيبي</div>
+              <div class="lease-meta">الواحة — وحدة 201 · LSE-2024-00012</div>
+            </div>
+            <div class="lease-days" style="color:var(--red)">7 أيام</div>
+          </div>
+          <div class="lease-row">
+            <div class="lease-avatar" style="background:linear-gradient(135deg,#f59e0b,#eab308)">ف.د</div>
+            <div class="lease-info">
+              <div class="lease-name">فهد الدوسري</div>
+              <div class="lease-meta">النخيل — وحدة 1505 · LSE-2024-00034</div>
+            </div>
+            <div class="lease-days" style="color:var(--amber)">21 يوم</div>
+          </div>
+          <div class="lease-row">
+            <div class="lease-avatar" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">س.ش</div>
+            <div class="lease-info">
+              <div class="lease-name">سلطان الشمري</div>
+              <div class="lease-meta">الربوة — فيلا 4 · LSE-2024-00008</div>
+            </div>
+            <div class="lease-days" style="color:var(--primary)">28 يوم</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WORK ORDERS -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">أوامر العمل المفتوحة</div>
+          <span class="badge badge-red">5 أوامر</span>
+        </div>
+        <div class="card-body">
+          <div class="wo-item">
+            <div class="wo-priority emergency"></div>
+            <div class="wo-info">
+              <div class="wo-title">تسريب مياه — وحدة 302</div>
+              <div class="wo-meta">WO-2024-00089 · مجمع الواحة · منذ ساعتين</div>
+            </div>
+            <span class="badge badge-red">طارئ</span>
+          </div>
+          <div class="wo-item">
+            <div class="wo-priority emergency"></div>
+            <div class="wo-info">
+              <div class="wo-title">انقطاع كهرباء — الطابق ٣</div>
+              <div class="wo-meta">WO-2024-00090 · برج النخيل · منذ ٤ ساعات</div>
+            </div>
+            <span class="badge badge-red">طارئ</span>
+          </div>
+          <div class="wo-item">
+            <div class="wo-priority high"></div>
+            <div class="wo-info">
+              <div class="wo-title">عطل مكيف مركزي</div>
+              <div class="wo-meta">WO-2024-00087 · مول الحياة · منذ يوم</div>
+            </div>
+            <span class="badge badge-amber">عالي</span>
+          </div>
+          <div class="wo-item">
+            <div class="wo-priority medium"></div>
+            <div class="wo-info">
+              <div class="wo-title">صيانة مصعد دورية</div>
+              <div class="wo-meta">WO-2024-00085 · برج النخيل · مجدول</div>
+            </div>
+            <span class="badge badge-blue">متوسط</span>
+          </div>
+          <div class="wo-item">
+            <div class="wo-priority low"></div>
+            <div class="wo-info">
+              <div class="wo-title">دهان جدار — وحدة 106</div>
+              <div class="wo-meta">WO-2024-00083 · الواحة · منذ ٣ أيام</div>
+            </div>
+            <span class="badge badge-cyan">منخفض</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 3 -->
+    <div class="grid-2">
+      <!-- AGING REPORT -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">تقرير أعمار الذمم (Aging)</div>
+          <span style="font-size:11px;color:var(--text3)">إجمالي: 342,500 ر.س</span>
+        </div>
+        <div class="card-body">
+          <div class="aging-bars">
+            <div class="aging-col">
+              <div class="aging-value" style="color:var(--green)">120K</div>
+              <div class="aging-bar" style="height:80%;background:var(--green)"></div>
+              <div class="aging-label">حالي</div>
+            </div>
+            <div class="aging-col">
+              <div class="aging-value" style="color:var(--amber)">85K</div>
+              <div class="aging-bar" style="height:56%;background:var(--amber)"></div>
+              <div class="aging-label">1-30</div>
+            </div>
+            <div class="aging-col">
+              <div class="aging-value" style="color:#f97316">52K</div>
+              <div class="aging-bar" style="height:35%;background:#f97316"></div>
+              <div class="aging-label">31-60</div>
+            </div>
+            <div class="aging-col">
+              <div class="aging-value" style="color:var(--red)">48K</div>
+              <div class="aging-bar" style="height:32%;background:var(--red)"></div>
+              <div class="aging-label">61-90</div>
+            </div>
+            <div class="aging-col">
+              <div class="aging-value" style="color:#991b1b">37.5K</div>
+              <div class="aging-bar" style="height:25%;background:#991b1b"></div>
+              <div class="aging-label">90+</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENT PAYMENTS -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">آخر المدفوعات</div>
+          <span class="badge badge-green">اليوم</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>المستأجر</th>
+                <th>المبلغ</th>
+                <th>الطريقة</th>
+                <th>الحالة</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:600">نواف القحطاني</td>
+                <td class="mono">35,000 ر.س</td>
+                <td>تحويل بنكي</td>
+                <td><span class="badge badge-green">مؤكد</span></td>
+              </tr>
+              <tr>
+                <td style="font-weight:600">يوسف الغامدي</td>
+                <td class="mono">28,000 ر.س</td>
+                <td>سداد</td>
+                <td><span class="badge badge-green">مؤكد</span></td>
+              </tr>
+              <tr>
+                <td style="font-weight:600">عبدالرحمن الحربي</td>
+                <td class="mono">18,000 ر.س</td>
+                <td>مدى</td>
+                <td><span class="badge badge-amber">قيد التأكيد</span></td>
+              </tr>
+              <tr>
+                <td style="font-weight:600">تركي المطيري</td>
+                <td class="mono">42,000 ر.س</td>
+                <td>شيك</td>
+                <td><span class="badge badge-red">مرتجع</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER NOTE -->
+    <div style="text-align:center;padding:24px 0;font-size:12px;color:var(--text3)">
+      PM-OS v0.1.0 — Phase 0 Preview · <a href="https://github.com/iRaed/pm-os" target="_blank" style="color:var(--primary);text-decoration:none">github.com/iRaed/pm-os</a>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ MOBILE MENU OVERLAY ═══ -->
+<div class="mobile-menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+<aside class="mobile-menu" id="mobileMenu">
+  <div class="sidebar-logo" style="padding:20px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:10px">
+    <h1 style="font-size:20px;font-weight:700;color:#fff">PM-OS</h1>
+    <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(37,99,235,0.3);color:#3b82f6;font-weight:600">v0.1</span>
+  </div>
+  <div style="padding:12px 8px">
+    <div style="font-size:10px;color:rgba(255,255,255,0.3);padding:12px 12px 6px;letter-spacing:1px">رئيسي</div>
+    <div class="nav-item active"><span class="icon">📊</span><span>لوحة التحكم</span></div>
+    <div class="nav-item"><span class="icon">🏢</span><span>العقارات</span></div>
+    <div class="nav-item"><span class="icon">🏠</span><span>الوحدات</span></div>
+    <div class="nav-item"><span class="icon">👤</span><span>الملاك</span></div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.3);padding:12px 12px 6px;letter-spacing:1px">التأجير</div>
+    <div class="nav-item"><span class="icon">👥</span><span>المستأجرون</span></div>
+    <div class="nav-item"><span class="icon">📋</span><span>العقود</span></div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.3);padding:12px 12px 6px;letter-spacing:1px">المالية</div>
+    <div class="nav-item"><span class="icon">💰</span><span>الفواتير</span></div>
+    <div class="nav-item"><span class="icon">💳</span><span>التحصيل</span></div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.3);padding:12px 12px 6px;letter-spacing:1px">التشغيل</div>
+    <div class="nav-item"><span class="icon">🔧</span><span>أوامر العمل</span></div>
+    <div class="nav-item"><span class="icon">🔄</span><span>صيانة وقائية</span></div>
+    <div class="nav-item"><span class="icon">👷</span><span>المقاولون</span></div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.3);padding:12px 12px 6px;letter-spacing:1px">أخرى</div>
+    <div class="nav-item"><span class="icon">📊</span><span>التقارير</span></div>
+    <div class="nav-item"><span class="icon">⚙️</span><span>الإعدادات</span></div>
+  </div>
+</aside>
+
+<!-- ═══ BOTTOM NAV ═══ -->
+<div class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <div class="bottom-nav-item active">
+      <span class="bnav-icon">📊</span>
+      <span>الرئيسية</span>
+    </div>
+    <div class="bottom-nav-item">
+      <span class="bnav-icon">🏢</span>
+      <span>العقارات</span>
+    </div>
+    <div class="bottom-nav-item" style="position:relative">
+      <span class="bnav-icon">🔧</span>
+      <span>الصيانة</span>
+      <span class="bnav-badge">5</span>
+    </div>
+    <div class="bottom-nav-item" style="position:relative">
+      <span class="bnav-icon">💰</span>
+      <span>المالية</span>
+      <span class="bnav-badge">7</span>
+    </div>
+    <div class="bottom-nav-item" onclick="toggleMenu()">
+      <span class="bnav-icon">☰</span>
+      <span>المزيد</span>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleMenu(){
+  document.getElementById('menuOverlay').classList.toggle('show');
+  document.getElementById('mobileMenu').classList.toggle('show');
+}
+</script>
+
+</body>
+</html>
