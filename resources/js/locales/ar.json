@@ -1,0 +1,143 @@
+{
+    "app": {
+        "name": "PM-OS",
+        "title": "منصة إدارة الأملاك والعقارات"
+    },
+    "nav": {
+        "dashboard": "لوحة التحكم",
+        "properties": "العقارات",
+        "units": "الوحدات",
+        "owners": "الملاك",
+        "residents": "المستأجرون",
+        "leases": "العقود",
+        "invoices": "الفواتير",
+        "collection": "التحصيل",
+        "work_orders": "أوامر العمل",
+        "maintenance": "الصيانة",
+        "pm_plans": "الصيانة الوقائية",
+        "contractors": "المقاولون",
+        "inspections": "الفحوصات",
+        "finance": "المالية",
+        "reports": "التقارير",
+        "settings": "الإعدادات"
+    },
+    "common": {
+        "save": "حفظ",
+        "cancel": "إلغاء",
+        "delete": "حذف",
+        "edit": "تعديل",
+        "create": "إنشاء",
+        "search": "بحث",
+        "filter": "تصفية",
+        "export": "تصدير",
+        "import": "استيراد",
+        "back": "رجوع",
+        "next": "التالي",
+        "previous": "السابق",
+        "yes": "نعم",
+        "no": "لا",
+        "confirm": "تأكيد",
+        "loading": "جاري التحميل...",
+        "no_data": "لا توجد بيانات",
+        "actions": "الإجراءات",
+        "status": "الحالة",
+        "details": "التفاصيل",
+        "notes": "ملاحظات",
+        "total": "الإجمالي",
+        "sar": "ر.س"
+    },
+    "property": {
+        "title": "العقارات",
+        "create": "إضافة عقار",
+        "name": "اسم العقار",
+        "code": "كود العقار",
+        "type": "نوع العقار",
+        "owner": "المالك",
+        "manager": "مدير العقار",
+        "city": "المدينة",
+        "district": "الحي",
+        "status": "الحالة",
+        "total_units": "عدد الوحدات",
+        "occupancy_rate": "نسبة الإشغال",
+        "types": {
+            "residential_compound": "مجمع سكني",
+            "commercial_building": "مبنى تجاري",
+            "tower": "برج",
+            "villa": "فيلا",
+            "mixed_use": "متعدد الاستخدام",
+            "land": "أرض",
+            "warehouse": "مستودع",
+            "mall": "مول تجاري",
+            "office_building": "مبنى مكاتب"
+        },
+        "statuses": {
+            "onboarding": "قيد التهيئة",
+            "active": "نشط",
+            "suspended": "موقوف",
+            "archived": "مؤرشف"
+        }
+    },
+    "unit": {
+        "title": "الوحدات",
+        "number": "رقم الوحدة",
+        "floor": "الطابق",
+        "type": "النوع",
+        "area": "المساحة",
+        "rooms": "الغرف",
+        "rent": "الإيجار",
+        "statuses": {
+            "vacant": "شاغرة",
+            "occupied": "مشغولة",
+            "under_maintenance": "تحت الصيانة",
+            "reserved": "محجوزة",
+            "not_available": "غير متاحة"
+        }
+    },
+    "lease": {
+        "title": "العقود",
+        "number": "رقم العقد",
+        "resident": "المستأجر",
+        "start_date": "تاريخ البداية",
+        "end_date": "تاريخ النهاية",
+        "rent_amount": "مبلغ الإيجار",
+        "days_remaining": "الأيام المتبقية"
+    },
+    "invoice": {
+        "title": "الفواتير",
+        "number": "رقم الفاتورة",
+        "amount": "المبلغ",
+        "due_date": "تاريخ الاستحقاق",
+        "balance": "الرصيد المتبقي",
+        "statuses": {
+            "draft": "مسودة",
+            "issued": "صادرة",
+            "sent": "مرسلة",
+            "partially_paid": "مدفوعة جزئياً",
+            "paid": "مدفوعة",
+            "overdue": "متأخرة",
+            "cancelled": "ملغاة",
+            "written_off": "مشطوبة"
+        }
+    },
+    "work_order": {
+        "title": "أوامر العمل",
+        "number": "رقم الأمر",
+        "category": "التصنيف",
+        "priority": "الأولوية",
+        "priorities": {
+            "emergency": "طارئ",
+            "high": "عالي",
+            "medium": "متوسط",
+            "low": "منخفض"
+        }
+    },
+    "dashboard": {
+        "title": "لوحة التحكم",
+        "total_properties": "إجمالي العقارات",
+        "total_units": "إجمالي الوحدات",
+        "occupancy_rate": "نسبة الإشغال",
+        "total_receivable": "إجمالي المستحقات",
+        "open_work_orders": "أوامر عمل مفتوحة",
+        "expiring_leases": "عقود قاربت على الانتهاء"
+    }
+}

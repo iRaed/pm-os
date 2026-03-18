@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Arabic RTL Base Styles */
+html[dir="rtl"] {
+    text-align: right;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Table Styling */
+@layer components {
+    .table-container {
+        @apply w-full overflow-x-auto rounded-lg border border-gray-200;
+    }
+    .table-header {
+        @apply bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wider;
+    }
+    .table-cell {
+        @apply px-4 py-3 text-sm text-gray-700;
+    }
+    .table-row {
+        @apply border-t border-gray-100 hover:bg-gray-50 transition-colors;
+    }
+
+    /* Badge */
+    .badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    }
+    .badge-green { @apply bg-green-100 text-green-800; }
+    .badge-red { @apply bg-red-100 text-red-800; }
+    .badge-yellow { @apply bg-yellow-100 text-yellow-800; }
+    .badge-blue { @apply bg-blue-100 text-blue-800; }
+    .badge-gray { @apply bg-gray-100 text-gray-800; }
+
+    /* Card */
+    .card {
+        @apply bg-white rounded-xl border border-gray-200 p-6;
+    }
+
+    /* Button */
+    .btn-primary {
+        @apply inline-flex items-center px-4 py-2.5 bg-primary-600 text-white text-sm font-medium rounded-lg
+               hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500
+               transition-colors;
+    }
+    .btn-secondary {
+        @apply inline-flex items-center px-4 py-2.5 bg-white text-gray-700 text-sm font-medium rounded-lg
+               border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500
+               transition-colors;
+    }
+    .btn-danger {
+        @apply inline-flex items-center px-4 py-2.5 bg-red-600 text-white text-sm font-medium rounded-lg
+               hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500
+               transition-colors;
+    }
+
+    /* Input */
+    .input {
+        @apply block w-full rounded-lg border-gray-300 shadow-sm text-sm
+               focus:border-primary-500 focus:ring-primary-500;
+    }
+    .input-label {
+        @apply block text-sm font-medium text-gray-700 mb-1;
+    }
+}

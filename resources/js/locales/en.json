@@ -1,0 +1,41 @@
+{
+    "app": {
+        "name": "PM-OS",
+        "title": "Property Management Operating System"
+    },
+    "nav": {
+        "dashboard": "Dashboard",
+        "properties": "Properties",
+        "units": "Units",
+        "owners": "Owners",
+        "residents": "Residents",
+        "leases": "Leases",
+        "invoices": "Invoices",
+        "collection": "Collection",
+        "work_orders": "Work Orders",
+        "maintenance": "Maintenance",
+        "pm_plans": "PM Plans",
+        "contractors": "Contractors",
+        "inspections": "Inspections",
+        "finance": "Finance",
+        "reports": "Reports",
+        "settings": "Settings"
+    },
+    "common": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "create": "Create",
+        "search": "Search",
+        "filter": "Filter",
+        "export": "Export",
+        "back": "Back",
+        "loading": "Loading...",
+        "no_data": "No data available",
+        "actions": "Actions",
+        "status": "Status",
+        "total": "Total",
+        "sar": "SAR"
+    }
+}

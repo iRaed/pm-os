@@ -1,0 +1,126 @@
+version: '3.8'
+
+services:
+  # Laravel Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pmos_app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - pmos_network
+    depends_on:
+      - db
+      - redis
+
+  # Nginx Web Server
+  webserver:
+    image: nginx:alpine
+    container_name: pmos_nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+      - "443:443"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - pmos_network
+    depends_on:
+      - app
+
+  # PostgreSQL Database
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: pmos_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pm_central
+      POSTGRES_USER: pmos
+      POSTGRES_PASSWORD: "${DB_PASSWORD:-secret}"
+    ports:
+      - "5432:5432"
+    volumes:
+      - pmos_pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - pmos_network
+
+  # Redis (Cache, Queue, Sessions)
+  redis:
+    image: redis:7-alpine
+    container_name: pmos_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - pmos_redis:/data
+    networks:
+      - pmos_network
+
+  # Laravel Horizon (Queue Manager)
+  horizon:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pmos_horizon
+    restart: unless-stopped
+    working_dir: /var/www
+    command: php artisan horizon
+    volumes:
+      - .:/var/www
+    networks:
+      - pmos_network
+    depends_on:
+      - app
+      - redis
+
+  # Laravel Reverb (WebSocket)
+  reverb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pmos_reverb
+    restart: unless-stopped
+    working_dir: /var/www
+    command: php artisan reverb:start
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/var/www
+    networks:
+      - pmos_network
+    depends_on:
+      - app
+      - redis
+
+  # MinIO (S3-compatible Object Storage)
+  minio:
+    image: minio/minio
+    container_name: pmos_minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: pmos_minio
+      MINIO_ROOT_PASSWORD: "${MINIO_PASSWORD:-secret123}"
+    volumes:
+      - pmos_minio:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - pmos_network
+
+volumes:
+  pmos_pgdata:
+  pmos_redis:
+  pmos_minio:
+
+networks:
+  pmos_network:
+    driver: bridge

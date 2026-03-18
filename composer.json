@@ -1,0 +1,96 @@
+{
+    "name": "pmos/property-management-os",
+    "type": "project",
+    "description": "PM-OS — Property Management Operating System | منصة إدارة الأملاك والعقارات",
+    "keywords": ["laravel", "property-management", "saas", "proptech", "saudi"],
+    "license": "proprietary",
+    "require": {
+        "php": "^8.3",
+        "laravel/framework": "^11.0",
+        "laravel/sanctum": "^4.0",
+        "laravel/horizon": "^5.0",
+        "laravel/reverb": "^1.0",
+        "laravel/pennant": "^1.0",
+        "inertiajs/inertia-laravel": "^1.0",
+        "tightenco/ziggy": "^2.0",
+        "stancl/tenancy": "^3.8",
+        "spatie/laravel-permission": "^6.0",
+        "spatie/laravel-activitylog": "^4.8",
+        "spatie/laravel-model-states": "^2.7",
+        "spatie/laravel-medialibrary": "^11.0",
+        "spatie/laravel-data": "^4.0",
+        "spatie/laravel-query-builder": "^5.0",
+        "spatie/laravel-settings": "^3.0",
+        "league/flysystem-aws-s3-v3": "^3.0",
+        "barryvdh/laravel-dompdf": "^2.0",
+        "maatwebsite/excel": "^3.1",
+        "openai-php/laravel": "^0.10",
+        "propaganistas/laravel-phone": "^5.0",
+        "brick/money": "^0.9"
+    },
+    "require-dev": {
+        "fakerphp/faker": "^1.23",
+        "laravel/pint": "^1.0",
+        "laravel/sail": "^1.26",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.0",
+        "phpunit/phpunit": "^11.0",
+        "larastan/larastan": "^2.0",
+        "knuckleswtf/scribe": "^4.0",
+        "pestphp/pest": "^2.0",
+        "pestphp/pest-plugin-laravel": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Modules\\Foundation\\": "app/Modules/Foundation/",
+            "Modules\\PropertyOnboarding\\": "app/Modules/PropertyOnboarding/",
+            "Modules\\Leasing\\": "app/Modules/Leasing/",
+            "Modules\\TenantManagement\\": "app/Modules/TenantManagement/",
+            "Modules\\Collection\\": "app/Modules/Collection/",
+            "Modules\\Finance\\": "app/Modules/Finance/",
+            "Modules\\Maintenance\\": "app/Modules/Maintenance/",
+            "Modules\\FacilityManagement\\": "app/Modules/FacilityManagement/",
+            "Modules\\Governance\\": "app/Modules/Governance/",
+            "Modules\\HOA\\": "app/Modules/HOA/",
+            "Modules\\Reporting\\": "app/Modules/Reporting/",
+            "Modules\\Marketing\\": "app/Modules/Marketing/",
+            "Modules\\AssetPerformance\\": "app/Modules/AssetPerformance/",
+            "Modules\\RiskManagement\\": "app/Modules/RiskManagement/",
+            "Modules\\Experience\\": "app/Modules/Experience/",
+            "Modules\\Growth\\": "app/Modules/Growth/",
+            "Modules\\Strategy\\": "app/Modules/Strategy/",
+            "Modules\\AIEngine\\": "app/Modules/AIEngine/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-update-cmd": [
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+        ],
+        "pint": "vendor/bin/pint",
+        "test": "vendor/bin/pest",
+        "analyse": "vendor/bin/phpstan analyse"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
