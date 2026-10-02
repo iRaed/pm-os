@@ -73,11 +73,16 @@ return new class extends Migration
             $table->index(['city', 'district']);
         });
 
-        // PostGIS Spatial Index (if PostGIS is available)
-        try {
+        // PostGIS Spatial Index — only when the PostGIS extension is installed.
+        // NOTE: a failed statement aborts the surrounding PostgreSQL transaction
+        // (migrations run inside one), so we must NOT attempt the index and catch
+        // the error — the catch would not un-poison the transaction and every
+        // later statement in this migration would fail with "transaction is
+        // aborted". Instead, detect PostGIS up front and skip entirely if absent.
+        $hasPostGis = DB::table('pg_extension')->where('extname', 'postgis')->exists();
+
+        if ($hasPostGis) {
             DB::statement('CREATE INDEX idx_properties_location ON properties USING GIST(ST_SetSRID(ST_MakePoint(lng::double precision, lat::double precision), 4326)) WHERE lat IS NOT NULL AND lng IS NOT NULL');
-        } catch (\Exception $e) {
-            // PostGIS not available — skip spatial index
         }
 
         // ─── الوحدات ─────────────────────────────────

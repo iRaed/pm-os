@@ -33,7 +33,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     /**
      * الحقول القابلة للتعبئة
      */
-    protected static function getCustomColumns(): array
+    public static function getCustomColumns(): array
     {
         return [
             'id',
@@ -117,11 +117,8 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         return false; // placeholder
     }
 
-    /**
-     * اسم قاعدة البيانات للشركة
-     */
-    public function database(): string
-    {
-        return config('tenancy.database.prefix') . $this->id;
-    }
+    // NOTE: do not override database(): the HasDatabase trait / TenantWithDatabase
+    // contract require database(): Stancl\Tenancy\DatabaseConfig. The tenant
+    // database name is derived from tenancy.database.prefix + the tenant key;
+    // read it with $tenant->database()->getName().
 }

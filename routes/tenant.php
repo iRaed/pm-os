@@ -4,16 +4,24 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
+use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
 /*
 |--------------------------------------------------------------------------
 | Tenant Web Routes
 |--------------------------------------------------------------------------
 | يتم تحميلها لكل Tenant (شركة إدارة أملاك)
-| Middleware: web, tenant, auth
+| Middleware: web + domain tenancy identification, then auth
+|
+| NOTE: reference the tenancy middleware classes directly rather than a
+| named middleware group. A group name (e.g. 'tenant') leaks into
+| Kernel::terminateMiddleware(), which calls make() on each name and throws
+| "Class \"tenant\" does not exist" during the terminate phase. Real class
+| names resolve correctly in both the handle and terminate phases.
 */
 
-Route::middleware(['web', 'tenant'])->group(function () {
+Route::middleware(['web', PreventAccessFromCentralDomains::class, InitializeTenancyByDomain::class])->group(function () {
 
     // ─── Auth Routes (Guest) ─────────────────────────
     Route::middleware('guest')->group(function () {

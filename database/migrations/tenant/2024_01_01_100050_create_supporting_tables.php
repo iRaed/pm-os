@@ -35,7 +35,8 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index(['documentable_type', 'documentable_id']);
+            // NOTE: uuidMorphs('documentable') already creates the
+            // (documentable_type, documentable_id) index — do not re-declare it.
             $table->index('category');
             $table->index('expiry_date');
         });
@@ -72,7 +73,8 @@ return new class extends Migration
             $table->jsonb('metadata')->default('{}');
             $table->timestamps();
 
-            $table->index(['communicatable_type', 'communicatable_id']);
+            // NOTE: nullableUuidMorphs('communicatable') already creates the
+            // (communicatable_type, communicatable_id) index — do not re-declare it.
             $table->index('channel');
             $table->index('status');
             $table->index('created_at');

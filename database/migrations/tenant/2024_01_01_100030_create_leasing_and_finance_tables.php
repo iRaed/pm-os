@@ -98,8 +98,8 @@ return new class extends Migration
             $table->string('signed_by_manager')->nullable();
             $table->string('document_path')->nullable();  // رابط ملف العقد الموقّع
 
-            // العقد السابق (للتجديدات)
-            $table->foreignUuid('previous_lease_id')->nullable()->constrained('leases')->nullOnDelete();
+            // العقد السابق (للتجديدات) — self-referential FK added below.
+            $table->foreignUuid('previous_lease_id')->nullable();
 
             $table->jsonb('metadata')->default('{}');
             $table->timestamps();
@@ -109,6 +109,16 @@ return new class extends Migration
             $table->index(['resident_id', 'status']);
             $table->index(['start_date', 'end_date']);
             $table->index('status');
+        });
+
+        // Self-referential FK must be added AFTER the table (and its primary key)
+        // exist. Declaring ->constrained('leases') inline fails on PostgreSQL
+        // because Laravel emits the "add primary key" statement AFTER the foreign
+        // key statements, so leases.id has no unique constraint yet at that point.
+        Schema::table('leases', function (Blueprint $table) {
+            $table->foreign('previous_lease_id')
+                ->references('id')->on('leases')
+                ->nullOnDelete();
         });
 
         // ─── الفواتير ────────────────────────────────
